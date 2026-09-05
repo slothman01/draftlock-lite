@@ -16,12 +16,12 @@
       margin-left: auto;
       margin-right: auto;
     }
-    h1 { font-size: 1.4rem; margin: 0 0 0.35rem; }
-    h2 { font-size: 1.15rem; margin: 1.1rem 0 0.35rem; }
-    .muted { color: #9ca3af; font-size: 0.92rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.25rem; }
+    h2 { font-size: 1.1rem; margin: 0.85rem 0 0.3rem; }
+    .muted { color: #9ca3af; font-size: 0.88rem; }
     .status {
-      margin: 0.7rem 0;
-      padding: 0.65rem 0.75rem;
+      margin: 0.45rem 0;
+      padding: 0.4rem 0.6rem;
       border-radius: 8px;
       font-weight: 700;
       text-align: center;
@@ -38,7 +38,7 @@
     .queue li { margin: 0.25rem 0; }
     textarea {
       width: 100%;
-      min-height: 6rem;
+      min-height: 4.5rem;
       font-size: 16px;
       box-sizing: border-box;
       padding: 8px;
@@ -60,23 +60,22 @@
 </head>
 <body>
   <h1>DraftLock Lite</h1>
-  <p class="muted">Decision board only. It never submits picks to Sleeper. Paste the top five into Sleeper’s native queue.</p>
-  <p class="muted">Bookmark this page, or Chrome menu → Add to Home screen. It stays up if your computer is off.</p>
+  <p class="muted">Never submits picks. Paste the top five into Sleeper’s native queue. Bookmark or Add to Home screen — this page stays up if your computer is off.</p>
   <div id="line" class="muted">Loading…</div>
   <div id="badge" class="status off">…</div>
   <div id="who" class="muted"></div>
-  <div id="warn" class="warn" hidden></div>
   <h2 id="rec-name"></h2>
   <div id="rec-meta" class="muted"></div>
   <div id="rec-action"></div>
   <ul id="reasons" class="muted"></ul>
   <h2>Queue (top 5)</h2>
   <ol id="queue" class="queue"></ol>
+  <h2>Your roster</h2>
+  <div id="roster" class="muted"></div>
   <textarea id="copy-src" readonly></textarea>
   <button id="copy-btn" type="button">Copy top 5</button>
   <p class="muted">Copy top 5 does not update the Sleeper queue. Paste the names into Sleeper yourself.</p>
-  <h2>Your roster</h2>
-  <div id="roster" class="muted"></div>
+  <div id="warn" class="warn" hidden></div>
   <script>
     const LEAGUE_ID = "1389407386388664320";
     const DRAFT_ID = "1389407387676315648";
