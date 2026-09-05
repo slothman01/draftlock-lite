@@ -30,7 +30,8 @@ def record_phone_hit(user_agent: str | None) -> None:
     HIT_PATH.parent.mkdir(parents=True, exist_ok=True)
     ua = (user_agent or "").replace("\n", " ")[:300]
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    HIT_PATH.write_text(f"{stamp} {ua}\n", encoding="utf-8")
+    with HIT_PATH.open("a", encoding="utf-8") as handle:
+        handle.write(f"{stamp} {ua}\n")
 
 
 def prepare_phone_session(is_phone: bool, state: dict) -> None:

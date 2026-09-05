@@ -105,6 +105,11 @@ def test_record_phone_hit_writes_android_only(monkeypatch, tmp_path):
     text = hit.read_text(encoding="utf-8")
     assert "Android 16" in text
     assert "Pixel 10 Pro XL" in text
+    record_phone_hit(
+        "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 Mobile Safari/537.36"
+    )
+    lines = hit.read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 2
 
 
 def test_copy_top5_html_has_http_fallback_and_selectable_names():
