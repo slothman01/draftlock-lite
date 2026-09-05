@@ -389,8 +389,8 @@
       }
       return scored;
     }
-    async function getJson(url) {
-      const res = await fetch(url);
+    async function getJson(url, signal) {
+      const res = await fetch(url, { signal });
       if (!res.ok) throw new Error(`${url} ${res.status}`);
       return res.json();
     }
@@ -401,15 +401,21 @@
       const user = users.find((row) => String(row.user_id) === ownerId);
       return user ? String(user.display_name || "Unknown") : "Unknown";
     }
-    async function refresh() {
+    async function refresh(signal) {
       const [user, users, rosters, draft, picks, traded, calc] = await Promise.all([
-        getJson(`https://api.sleeper.app/v1/user/${encodeURIComponent(USERNAME)}`).catch(() => null),
-        getJson(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`),
-        getJson(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`),
-        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}`),
-        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}/picks`),
-        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}/traded_picks`).catch(() => []),
-        getJson(FANTASYCALC),
+        getJson(`https://api.sleeper.app/v1/user/${encodeURIComponent(USERNAME)}`, signal).catch((err) => {
+          if (err && err.name === "AbortError") throw err;
+          return null;
+        }),
+        getJson(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`, signal),
+        getJson(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`, signal),
+        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}`, signal),
+        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}/picks`, signal),
+        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}/traded_picks`, signal).catch((err) => {
+          if (err && err.name === "AbortError") throw err;
+          return [];
+        }),
+        getJson(FANTASYCALC, signal),
       ]);
       const mapping = mapUser(USERNAME, user, users, rosters, draft);
       const settings = draft.settings || {};
@@ -489,18 +495,25 @@
       }
       setTimeout(() => { btn.textContent = "Copy top 5"; }, 1200);
     });
+    let pollTimer = null;
     async function loop() {
+      if (pollTimer) pollTimer.abort();
+      const signal = new AbortController();
+      pollTimer = signal;
       try {
-        await refresh();
+        await refresh(signal.signal);
       } catch (err) {
+        if (err && err.name === "AbortError") return;
         const badge = document.getElementById("badge");
         badge.textContent = "STALE";
         badge.className = "status stale";
         document.getElementById("line").textContent = String(err.message || err);
+      } finally {
+        if (pollTimer === signal) pollTimer = null;
       }
     }
     loop();
-    setInterval(loop, 3000);
+    setInterval(loop, 8000);
   </script>
 </body>
 </html>
