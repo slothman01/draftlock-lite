@@ -1,0 +1,100 @@
+[
+  {
+    "user_id": "340868149878530048",
+    "display_name": "Charger67",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Lions Fan Backup Team"
+    }
+  },
+  {
+    "user_id": "974293494250389504",
+    "display_name": "smithcasl98",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {}
+  },
+  {
+    "user_id": "1248807598099017728",
+    "display_name": "Pruchniewski72",
+    "is_owner": true,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Jimothy's Jiants"
+    }
+  },
+  {
+    "user_id": "1260836544839692288",
+    "display_name": "TimJayne",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Pigskin Prophets"
+    }
+  },
+  {
+    "user_id": "1389405856373669888",
+    "display_name": "shgar16",
+    "is_owner": true,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Roll for Touchdown "
+    }
+  },
+  {
+    "user_id": "1389744881773051904",
+    "display_name": "Slothman01",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {}
+  },
+  {
+    "user_id": "1389808594802704384",
+    "display_name": "jaredmcdanield",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Handy DandyLorian"
+    }
+  },
+  {
+    "user_id": "1390499445388382208",
+    "display_name": "diasterinthemaking",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Disasterinthemaking"
+    }
+  },
+  {
+    "user_id": "1391794707645857792",
+    "display_name": "Mattaray",
+    "is_owner": false,
+    "league_id": "1389407386388664320",
+    "metadata": {
+      "team_name": "Mattaray"
+    }
+  },
+  {
+    "user_id": "1391834851761459200",
+    "display_name": "TaylorTeachout",
+    "is_owner": null,
+    "league_id": "1389407386388664320",
+    "metadata": {}
+  },
+  {
+    "user_id": "1393642672744316928",
+    "display_name": "CJaWeaver",
+    "is_owner": null,
+    "league_id": "1389407386388664320",
+    "metadata": {}
+  },
+  {
+    "user_id": "1393956568579461120",
+    "display_name": "firewife171",
+    "is_owner": null,
+    "league_id": "1389407386388664320",
+    "metadata": {}
+  }
+]

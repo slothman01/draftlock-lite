@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DraftLock Lite</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1rem 0.85rem 2.5rem;
+      background: #10141a;
+      color: #f3f4f6;
+      max-width: 42rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 { font-size: 1.4rem; margin: 0 0 0.35rem; }
+    h2 { font-size: 1.15rem; margin: 1.1rem 0 0.35rem; }
+    .muted { color: #9ca3af; font-size: 0.92rem; }
+    .status {
+      margin: 0.7rem 0;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .live { background: #166534; }
+    .stale { background: #92400e; }
+    .off { background: #7f1d1d; }
+    .pick {
+      font-size: 1.55rem;
+      font-weight: 800;
+      margin: 0.4rem 0 0.15rem;
+    }
+    .queue { margin: 0; padding-left: 1.1rem; }
+    .queue li { margin: 0.25rem 0; }
+    textarea {
+      width: 100%;
+      min-height: 6rem;
+      font-size: 16px;
+      box-sizing: border-box;
+      padding: 8px;
+    }
+    button {
+      min-height: 44px;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 6px;
+      cursor: pointer;
+    }
+    .warn {
+      background: #3f2a0a;
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem;
+      margin: 0.6rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>DraftLock Lite</h1>
+  <p class="muted">Decision board only. It never submits picks to Sleeper. Paste the top five into Sleeper’s native queue.</p>
+  <div id="line" class="muted">Loading…</div>
+  <div id="badge" class="status off">…</div>
+  <div id="who" class="muted"></div>
+  <div id="warn" class="warn" hidden></div>
+  <h2 id="rec-name"></h2>
+  <div id="rec-meta" class="muted"></div>
+  <div id="rec-action"></div>
+  <ul id="reasons" class="muted"></ul>
+  <h2>Queue (top 5)</h2>
+  <ol id="queue" class="queue"></ol>
+  <textarea id="copy-src" readonly></textarea>
+  <button id="copy-btn" type="button">Copy top 5</button>
+  <p class="muted">Copy top 5 does not update the Sleeper queue. Paste the names into Sleeper yourself.</p>
+  <h2>Your roster</h2>
+  <div id="roster" class="muted"></div>
+  <script>
+    const LEAGUE_ID = "1389407386388664320";
+    const DRAFT_ID = "1389407387676315648";
+    const FANTASYCALC =
+      "https://api.fantasycalc.com/values/current?isDynasty=true&numQbs=2&numTeams=12&ppr=1";
+    const IDP = new Set(["IDP", "DL", "LB", "DB", "IDP_FLEX"]);
+    const SKILL = new Set(["QB", "RB", "WR", "TE"]);
+    const POLICY = {
+      superflex: true,
+      tep_bonus: 0.5,
+      position_multipliers: { QB: 1.18, WR: 1.06, TE: 1.08, RB: 0.98, IDP: 0.82, K: 0.35, DEF: 0.35 },
+      roster_targets_by_round: {
+        6: { QB: 2, WR: 2, RB: 1, TE: 0 },
+        12: { QB: 3, WR: 4, RB: 3, TE: 1 },
+        20: { QB: 3, WR: 7, RB: 5, TE: 2, IDP: 1 },
+      },
+      hard_rules: {
+        minimum_qbs_after_round_6: 2,
+        maximum_qbs_before_round_10: 3,
+        earliest_k_round: 25,
+        earliest_def_round: 25,
+        earliest_idp_round_without_uploaded_rankings: 20,
+        avoid_same_nfl_team_skill_stack_over: 3,
+      },
+      tie_breakers: ["younger_player", "scarcer_position", "higher_market_value"],
+      age_penalty_per_year_over_24: 1.8,
+      starter_bonus: 0,
+    };
+    const params = new URLSearchParams(location.search);
+    const USERNAME = (params.get("u") || "Slothman01").trim();
+
+    function canon(raw) {
+      const pos = String(raw || "").trim().toUpperCase();
+      if (IDP.has(pos)) return "IDP";
+      if (pos === "DST" || pos === "D/ST") return "DEF";
+      return pos || "UNK";
+    }
+    function clamp(value, low, high) {
+      return Math.max(low, Math.min(high, value));
+    }
+    function snakeSlotForPick(pickNo, teams) {
+      const roundNo = Math.floor((pickNo - 1) / teams) + 1;
+      const offset = (pickNo - 1) % teams;
+      const slot = roundNo % 2 === 1 ? offset + 1 : teams - offset;
+      return [roundNo, slot];
+    }
+    function intMap(raw) {
+      const out = {};
+      if (!raw || typeof raw !== "object") return out;
+      for (const [key, value] of Object.entries(raw)) {
+        const k = Number(key);
+        const v = Number(value);
+        if (Number.isFinite(k) && Number.isFinite(v)) out[k] = v;
+      }
+      return out;
+    }
+    function originalRosterForPick(pickNo, draft) {
+      const teams = Number((draft.settings || {}).teams || 0);
+      if (teams < 1) return null;
+      const [, slot] = snakeSlotForPick(pickNo, teams);
+      return intMap(draft.slot_to_roster_id)[slot] ?? null;
+    }
+    function tradedOwnerMap(traded) {
+      const out = {};
+      for (const row of traded || []) {
+        const roundNo = Number(row.round);
+        const original = Number(row.roster_id);
+        const owner = Number(row.owner_id);
+        if (Number.isFinite(roundNo) && Number.isFinite(original) && Number.isFinite(owner)) {
+          out[`${roundNo}:${original}`] = owner;
+        }
+      }
+      return out;
+    }
+    function ownerRosterForPick(pickNo, draft, traded) {
+      const teams = Number((draft.settings || {}).teams || 0);
+      if (teams < 1) return null;
+      const [roundNo] = snakeSlotForPick(pickNo, teams);
+      const original = originalRosterForPick(pickNo, draft);
+      if (original == null) return null;
+      const map = tradedOwnerMap(traded);
+      return map[`${roundNo}:${original}`] ?? original;
+    }
+    function upcomingPicks(rosterId, currentPick, draft, traded, limit = 2) {
+      const settings = draft.settings || {};
+      const teams = Number(settings.teams || 12);
+      const rounds = Number(settings.rounds || 29);
+      const total = teams * rounds;
+      const found = [];
+      for (let pickNo = Math.max(currentPick, 1); pickNo <= total; pickNo += 1) {
+        if (ownerRosterForPick(pickNo, draft, traded) === rosterId) {
+          found.push(pickNo);
+          if (found.length >= limit) break;
+        }
+      }
+      return found;
+    }
+    function median(values) {
+      if (!values.length) return 0;
+      const sorted = [...values].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+    function mapUser(username, sleeperUser, users, rosters, draft) {
+      let userId = String((sleeperUser || {}).user_id || "");
+      const handle = username.trim();
+      if (!userId && handle) {
+        const lowered = handle.toLowerCase();
+        for (const row of users) {
+          if (String(row.username || "").toLowerCase() === lowered ||
+              String(row.display_name || "").toLowerCase() === lowered) {
+            userId = String(row.user_id || "");
+            sleeperUser = row;
+            break;
+          }
+        }
+      }
+      const leagueUser = users.find((row) => String(row.user_id) === userId);
+      const roster = rosters.find((row) => String(row.owner_id) === userId);
+      const order = draft.draft_order || {};
+      let draftSlot = null;
+      if (userId && order[userId] != null) draftSlot = Number(order[userId]);
+      const display = String((leagueUser || sleeperUser || {}).display_name || handle);
+      const boardOnly = !userId || !roster || draftSlot == null;
+      return {
+        username: handle,
+        userId,
+        rosterId: roster && roster.roster_id != null ? Number(roster.roster_id) : null,
+        draftSlot,
+        displayName: display,
+        boardOnly,
+      };
+    }
+    function parseRankings(payload) {
+      const rows = Array.isArray(payload) ? payload : (payload && payload.players) || [];
+      const players = [];
+      for (const row of rows) {
+        if (!row || typeof row !== "object") continue;
+        const player = row.player && typeof row.player === "object" ? row.player : {};
+        const name = String(player.name || row.player || row.name || "").trim();
+        if (!name || name.toUpperCase() === "PICK") continue;
+        const position = canon(player.position || row.position);
+        if (position === "PICK") continue;
+        let sleeperId = player.sleeperId || row.sleeper_id || row.sleeperId;
+        sleeperId = sleeperId != null && String(sleeperId).trim() ? String(sleeperId).trim() : null;
+        const value = row.value == null || row.value === "" ? null : Number(row.value);
+        let rank = row.overallRank != null ? Number(row.overallRank) : row.rank != null ? Number(row.rank) : null;
+        if (!Number.isFinite(rank)) rank = null;
+        const ageRaw = player.maybeAge != null ? player.maybeAge : row.age;
+        const age = ageRaw == null || ageRaw === "" ? null : Number(ageRaw);
+        const team = String(player.maybeTeam || row.team || "").trim().toUpperCase();
+        if (value == null && rank == null) continue;
+        const yoe = Number(player.maybeYoe || 0);
+        players.push({
+          name,
+          position,
+          team,
+          value: Number.isFinite(value) ? value : null,
+          rank,
+          sleeper_id: sleeperId,
+          age: Number.isFinite(age) ? age : null,
+          starter: Boolean(row.starter) || yoe >= 3,
+        });
+      }
+      const ordered = [...players].sort((a, b) => {
+        const av = a.value == null ? -Infinity : a.value;
+        const bv = b.value == null ? -Infinity : b.value;
+        if (bv !== av) return bv - av;
+        const ar = a.rank == null ? 1e9 : a.rank;
+        const br = b.rank == null ? 1e9 : b.rank;
+        if (ar !== br) return ar - br;
+        return a.name.localeCompare(b.name);
+      });
+      ordered.forEach((player, index) => {
+        if (player.rank == null) player.rank = index + 1;
+      });
+      return players;
+    }
+    function countPositions(players) {
+      const counts = { QB: 0, RB: 0, WR: 0, TE: 0, IDP: 0, K: 0, DEF: 0 };
+      for (const player of players) {
+        const pos = canon(player.position);
+        if (pos in counts) counts[pos] += 1;
+      }
+      return counts;
+    }
+    function nextTargets(roundNo) {
+      const keys = Object.keys(POLICY.roster_targets_by_round).map(Number).sort((a, b) => a - b);
+      for (const checkpoint of keys) {
+        if (roundNo <= checkpoint) return { ...POLICY.roster_targets_by_round[checkpoint] };
+      }
+      return { ...POLICY.roster_targets_by_round[keys[keys.length - 1]] };
+    }
+    function needMultiplier(have, target) {
+      const missing = target - have;
+      if (missing >= 2) return 1.14;
+      if (missing === 1) return 1.08;
+      if (missing <= -1) return 0.92;
+      return 1;
+    }
+    function marketBase(player, ranked) {
+      const values = ranked.map((p) => p.value).filter((v) => v != null);
+      if (player.value != null && values.length >= 2) {
+        const low = Math.min(...values);
+        const high = Math.max(...values);
+        if (high === low) return 100;
+        return 100 * (player.value - low) / (high - low);
+      }
+      const ranks = ranked.map((p) => p.rank).filter((v) => v != null);
+      const rank = player.rank != null ? player.rank : (ranks.length ? Math.max(...ranks) : 1);
+      const total = Math.max(ranks.length || ranked.length, 1);
+      return 100 * (1 - (rank - 1) / Math.max(total - 1, 1));
+    }
+    function eligible(player, roundNo, roster, qbCount) {
+      const rules = POLICY.hard_rules;
+      const pos = canon(player.position);
+      if (pos === "K" && roundNo < rules.earliest_k_round) return false;
+      if (pos === "DEF" && roundNo < rules.earliest_def_round) return false;
+      if (pos === "IDP" && roundNo < rules.earliest_idp_round_without_uploaded_rankings) return false;
+      if (pos === "QB" && roundNo < 10 && qbCount >= rules.maximum_qbs_before_round_10) return false;
+      if (SKILL.has(pos) && player.team) {
+        const same = roster.filter((owned) => SKILL.has(canon(owned.position)) &&
+          String(owned.team || "").toUpperCase() === player.team.toUpperCase()).length;
+        if (same >= rules.avoid_same_nfl_team_skill_stack_over) return false;
+      }
+      return true;
+    }
+    function waitRisk(marketRank, nextUserPick, room) {
+      const adjusted = marketRank + room;
+      if (nextUserPick == null) return [0.05, adjusted];
+      const risk = clamp(0.5 + (nextUserPick - adjusted) / 20, 0.05, 0.95);
+      return [risk, adjusted];
+    }
+    function recommend(available, roster, roundNo, currentPick, nextUserPick, completedPicks, allRanked) {
+      if (!available.length) return [];
+      const have = countPositions(roster);
+      const targets = nextTargets(roundNo);
+      const rankSource = allRanked || available;
+      const rankById = {};
+      for (const p of rankSource) {
+        if (p.sleeper_id) rankById[p.sleeper_id] = Number(p.rank || 0);
+      }
+      for (const pick of completedPicks || []) {
+        const pid = String(pick.player_id || "");
+        if (pid && pick.market_rank != null) rankById[pid] = Number(pick.market_rank);
+      }
+      const deltas = [];
+      for (const pick of completedPicks || []) {
+        const pid = String(pick.player_id || "");
+        const rank = rankById[pid];
+        if (rank == null || pick.pick_no == null) continue;
+        deltas.push(Number(pick.pick_no) - Number(rank));
+      }
+      const room = deltas.length < 8 ? 0 : median(deltas);
+      const qbCount = have.QB || 0;
+      const scored = [];
+      for (const player of available) {
+        const pos = canon(player.position);
+        if (!eligible(player, roundNo, roster, qbCount)) continue;
+        const base = marketBase(player, available);
+        let multiplier = POLICY.position_multipliers[pos] ?? 1;
+        if (pos === "TE" && POLICY.tep_bonus) multiplier *= 1 + POLICY.tep_bonus;
+        let positionScore = base * multiplier;
+        if (player.age != null) positionScore -= Math.max(0, player.age - 24) * POLICY.age_penalty_per_year_over_24;
+        if (POLICY.starter_bonus && player.starter) positionScore += POLICY.starter_bonus;
+        const need = needMultiplier(have[pos] || 0, targets[pos] || 0);
+        const [risk, adjusted] = waitRisk(Number(player.rank || 1), nextUserPick, room);
+        let urgency = 0;
+        if (nextUserPick != null && adjusted < nextUserPick + 20) urgency = 12 * risk;
+        scored.push({
+          player,
+          base,
+          positionScore,
+          need,
+          wait_risk: risk,
+          urgency,
+          final_score: positionScore * need + urgency,
+          take_now: risk >= 0.55,
+          reasons: [],
+        });
+      }
+      for (const row of scored) {
+        const player = row.player;
+        const pos = canon(player.position);
+        const reasons = [];
+        const remainingValues = available.map((p) => p.value).filter((v) => v != null);
+        if (player.value != null && remainingValues.length && player.value === Math.max(...remainingValues)) {
+          reasons.push("Top remaining dynasty value");
+        }
+        if (pos === "QB" && POLICY.superflex) reasons.push("Superflex QB scarcity");
+        if (pos === "TE" && POLICY.tep_bonus > 0) reasons.push("TE premium raises his value");
+        const target = targets[pos] || 0;
+        const owned = have[pos] || 0;
+        if (target > owned) {
+          const ordinal = { 1: "first", 2: "second", 3: "third", 4: "fourth" }[owned + 1] || `${owned + 1}th`;
+          const label = pos === "QB" ? "starting-QB" : pos;
+          reasons.push(`Fills your ${ordinal} ${label} target`);
+        }
+        if (row.wait_risk >= 0.45 && nextUserPick != null) {
+          reasons.push(`${Math.round(row.wait_risk * 100)}% risk he is gone before pick ${nextUserPick}`);
+        }
+        row.reasons = reasons.slice(0, 3);
+      }
+      scored.sort((a, b) => b.final_score - a.final_score || a.player.name.localeCompare(b.player.name));
+      if (roundNo > 6 && (have.QB || 0) < POLICY.hard_rules.minimum_qbs_after_round_6) {
+        const forced = scored.find((row) => canon(row.player.position) === "QB");
+        if (forced) {
+          forced.reasons = ["Hard rule: starting QB target is still open", ...forced.reasons].slice(0, 3);
+          return [forced, ...scored.filter((row) => row !== forced)];
+        }
+      }
+      return scored;
+    }
+    async function getJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${url} ${res.status}`);
+      return res.json();
+    }
+    function displayNameForRoster(rosterId, users, rosters) {
+      if (rosterId == null) return "Unknown";
+      const roster = (rosters || []).find((row) => Number(row.roster_id || 0) === rosterId);
+      const ownerId = roster ? String(roster.owner_id || "") : "";
+      const user = users.find((row) => String(row.user_id) === ownerId);
+      return user ? String(user.display_name || "Unknown") : "Unknown";
+    }
+    async function refresh() {
+      const [user, users, rosters, draft, picks, traded, calc] = await Promise.all([
+        getJson(`https://api.sleeper.app/v1/user/${encodeURIComponent(USERNAME)}`).catch(() => null),
+        getJson(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`),
+        getJson(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`),
+        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}`),
+        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}/picks`),
+        getJson(`https://api.sleeper.app/v1/draft/${DRAFT_ID}/traded_picks`).catch(() => []),
+        getJson(FANTASYCALC),
+      ]);
+      const mapping = mapUser(USERNAME, user, users, rosters, draft);
+      const settings = draft.settings || {};
+      const teams = Number(settings.teams || 12);
+      const rounds = Number(settings.rounds || 29);
+      const total = teams * rounds;
+      const currentPick = (picks || []).length + 1;
+      let roundNo = rounds;
+      let rosterOnClock = null;
+      if (currentPick <= total) {
+        [roundNo] = snakeSlotForPick(currentPick, teams);
+        rosterOnClock = ownerRosterForPick(currentPick, draft, traded);
+      }
+      const nextTwo = mapping.rosterId != null
+        ? upcomingPicks(mapping.rosterId, currentPick, draft, traded, 2)
+        : [];
+      const until = nextTwo.length ? Math.max(0, nextTwo[0] - currentPick) : null;
+      const drafted = new Set((picks || []).map((p) => String(p.player_id || "")).filter(Boolean));
+      const userIds = (picks || [])
+        .filter((p) => mapping.rosterId != null && Number(p.roster_id || 0) === mapping.rosterId && p.player_id)
+        .map((p) => String(p.player_id));
+      const ranked = parseRankings(calc);
+      const byId = Object.fromEntries(ranked.filter((p) => p.sleeper_id).map((p) => [p.sleeper_id, p]));
+      const available = ranked.filter((p) => p.sleeper_id && !drafted.has(p.sleeper_id));
+      const roster = userIds.map((id) => byId[id]).filter(Boolean);
+      const scored = recommend(available, roster, roundNo, currentPick, nextTwo[0] ?? null, picks, ranked);
+      const top = scored.slice(0, 5);
+      const onClock = displayNameForRoster(rosterOnClock, users, rosters);
+      document.getElementById("line").textContent =
+        `Pick ${currentPick} · Round ${roundNo} · On the clock: ${onClock} · Until you: ${until ?? "—"} · Next: ${nextTwo.join(", ") || "—"}`;
+      const badge = document.getElementById("badge");
+      badge.textContent = "LIVE";
+      badge.className = "status live";
+      document.getElementById("who").textContent = mapping.boardOnly
+        ? `${USERNAME} · board only`
+        : `${mapping.displayName} · slot ${mapping.draftSlot} · roster ${mapping.rosterId}`;
+      const rec = top[0];
+      if (!rec) {
+        document.getElementById("rec-name").textContent = "No eligible players";
+        document.getElementById("rec-meta").textContent = "";
+        document.getElementById("rec-action").textContent = "";
+        document.getElementById("reasons").innerHTML = "";
+      } else {
+        const p = rec.player;
+        document.getElementById("rec-name").textContent = p.name;
+        document.getElementById("rec-meta").textContent =
+          `${p.position} · ${p.team || "FA"} · age ${p.age ?? "—"} · dynasty value ${p.value ?? "—"} · adj. score ${rec.final_score.toFixed(1)}`;
+        const riskPct = Math.round(rec.wait_risk * 100);
+        document.getElementById("rec-action").innerHTML =
+          `<strong>${rec.take_now ? "Take now" : "Can wait"}</strong> · wait risk ${riskPct}%`;
+        document.getElementById("reasons").innerHTML = rec.reasons.map((r) => `<li>${r}</li>`).join("");
+      }
+      document.getElementById("queue").innerHTML = top.map((row, i) => {
+        const mark = i === 0 ? "→ " : "";
+        return `<li>${mark}${row.player.name} (${row.player.position}) score ${row.final_score.toFixed(1)} risk ${Math.round(row.wait_risk * 100)}%</li>`;
+      }).join("");
+      document.getElementById("copy-src").value = top.map((row) => row.player.name).join("\n");
+      document.getElementById("roster").textContent = roster.length
+        ? roster.map((p) => `${p.name} (${p.position})`).join(" · ")
+        : "No drafted players on your roster yet.";
+      const warn = document.getElementById("warn");
+      warn.hidden = true;
+      if (!ranked.some((p) => p.position === "IDP")) {
+        warn.hidden = false;
+        warn.textContent = "No IDP rankings were supplied. IDP stays out of the main queue until later rounds.";
+      }
+    }
+    document.getElementById("copy-btn").addEventListener("click", async () => {
+      const text = document.getElementById("copy-src").value;
+      const btn = document.getElementById("copy-btn");
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = "Copied";
+      } catch {
+        document.getElementById("copy-src").select();
+        btn.textContent = "Select names, then copy";
+      }
+      setTimeout(() => { btn.textContent = "Copy top 5"; }, 1200);
+    });
+    async function loop() {
+      try {
+        await refresh();
+      } catch (err) {
+        const badge = document.getElementById("badge");
+        badge.textContent = "STALE";
+        badge.className = "status stale";
+        document.getElementById("line").textContent = String(err.message || err);
+      }
+    }
+    loop();
+    setInterval(loop, 3000);
+  </script>
+</body>
+</html>

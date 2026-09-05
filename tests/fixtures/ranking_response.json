@@ -1,0 +1,158 @@
+[
+  {
+    "player": {
+      "name": "Josh Allen",
+      "sleeperId": "4984",
+      "position": "QB",
+      "maybeTeam": "BUF",
+      "maybeAge": 30.3,
+      "maybeYoe": 8
+    },
+    "value": 10518,
+    "overallRank": 1,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Jahmyr Gibbs",
+      "sleeperId": "9221",
+      "position": "RB",
+      "maybeTeam": "DET",
+      "maybeAge": 24.5,
+      "maybeYoe": 3
+    },
+    "value": 10482,
+    "overallRank": 2,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Bijan Robinson",
+      "sleeperId": "9509",
+      "position": "RB",
+      "maybeTeam": "ATL",
+      "maybeAge": 24.6,
+      "maybeYoe": 3
+    },
+    "value": 9719,
+    "overallRank": 3,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Ja'Marr Chase",
+      "sleeperId": "7564",
+      "position": "WR",
+      "maybeTeam": "CIN",
+      "maybeAge": 26.5,
+      "maybeYoe": 5
+    },
+    "value": 9550,
+    "overallRank": 4,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Jaxon Smith-Njigba",
+      "sleeperId": "9488",
+      "position": "WR",
+      "maybeTeam": "SEA",
+      "maybeAge": 24.6,
+      "maybeYoe": 3
+    },
+    "value": 8738,
+    "overallRank": 5,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Puka Nacua",
+      "sleeperId": "9493",
+      "position": "WR",
+      "maybeTeam": "LAR",
+      "maybeAge": 25.3,
+      "maybeYoe": 3
+    },
+    "value": 8369,
+    "overallRank": 6,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Drake Maye",
+      "sleeperId": "11564",
+      "position": "QB",
+      "maybeTeam": "NE",
+      "maybeAge": 24.0,
+      "maybeYoe": 2
+    },
+    "value": 8345,
+    "overallRank": 7,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Brock Bowers",
+      "sleeperId": "11604",
+      "position": "TE",
+      "maybeTeam": "LV",
+      "maybeAge": 23.7,
+      "maybeYoe": 2
+    },
+    "value": 7823,
+    "overallRank": 8,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Justin Jefferson",
+      "sleeperId": "6794",
+      "position": "WR",
+      "maybeTeam": "MIN",
+      "maybeAge": 27.1,
+      "maybeYoe": 6
+    },
+    "value": 7600,
+    "overallRank": 9,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Lamar Jackson",
+      "sleeperId": "4881",
+      "position": "QB",
+      "maybeTeam": "BAL",
+      "maybeAge": 29.4,
+      "maybeYoe": 8
+    },
+    "value": 7400,
+    "overallRank": 10,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "CeeDee Lamb",
+      "sleeperId": "6786",
+      "position": "WR",
+      "maybeTeam": "DAL",
+      "maybeAge": 27.4,
+      "maybeYoe": 6
+    },
+    "value": 7100,
+    "overallRank": 11,
+    "starter": true
+  },
+  {
+    "player": {
+      "name": "Trey McBride",
+      "sleeperId": "8135",
+      "position": "TE",
+      "maybeTeam": "ARI",
+      "maybeAge": 26.2,
+      "maybeYoe": 4
+    },
+    "value": 5200,
+    "overallRank": 20,
+    "starter": true
+  }
+]

@@ -1,0 +1,130 @@
+{
+  "4984": {
+    "player_id": "4984",
+    "first_name": "Josh",
+    "last_name": "Allen",
+    "position": "QB",
+    "team": "BUF",
+    "age": 30
+  },
+  "9221": {
+    "player_id": "9221",
+    "first_name": "Jahmyr",
+    "last_name": "Gibbs",
+    "position": "RB",
+    "team": "DET",
+    "age": 24
+  },
+  "9509": {
+    "player_id": "9509",
+    "first_name": "Bijan",
+    "last_name": "Robinson",
+    "position": "RB",
+    "team": "ATL",
+    "age": 24
+  },
+  "7564": {
+    "player_id": "7564",
+    "first_name": "Ja'Marr",
+    "last_name": "Chase",
+    "position": "WR",
+    "team": "CIN",
+    "age": 26
+  },
+  "9488": {
+    "player_id": "9488",
+    "first_name": "Jaxon",
+    "last_name": "Smith-Njigba",
+    "position": "WR",
+    "team": "SEA",
+    "age": 24
+  },
+  "9493": {
+    "player_id": "9493",
+    "first_name": "Puka",
+    "last_name": "Nacua",
+    "position": "WR",
+    "team": "LAR",
+    "age": 25
+  },
+  "11564": {
+    "player_id": "11564",
+    "first_name": "Drake",
+    "last_name": "Maye",
+    "position": "QB",
+    "team": "NE",
+    "age": 24
+  },
+  "11604": {
+    "player_id": "11604",
+    "first_name": "Brock",
+    "last_name": "Bowers",
+    "position": "TE",
+    "team": "LV",
+    "age": 23
+  },
+  "6794": {
+    "player_id": "6794",
+    "first_name": "Justin",
+    "last_name": "Jefferson",
+    "position": "WR",
+    "team": "MIN",
+    "age": 27
+  },
+  "4881": {
+    "player_id": "4881",
+    "first_name": "Lamar",
+    "last_name": "Jackson",
+    "position": "QB",
+    "team": "BAL",
+    "age": 29
+  },
+  "6786": {
+    "player_id": "6786",
+    "first_name": "CeeDee",
+    "last_name": "Lamb",
+    "position": "WR",
+    "team": "DAL",
+    "age": 27
+  },
+  "8135": {
+    "player_id": "8135",
+    "first_name": "Trey",
+    "last_name": "McBride",
+    "position": "TE",
+    "team": "ARI",
+    "age": 26
+  },
+  "1001": {
+    "player_id": "1001",
+    "first_name": "John",
+    "last_name": "Smith",
+    "position": "WR",
+    "team": "NYG",
+    "age": 24
+  },
+  "1002": {
+    "player_id": "1002",
+    "first_name": "Jon",
+    "last_name": "Smith",
+    "position": "WR",
+    "team": "NYJ",
+    "age": 24
+  },
+  "421": {
+    "player_id": "421",
+    "first_name": "Justin",
+    "last_name": "Tucker",
+    "position": "K",
+    "team": null,
+    "age": 36
+  },
+  "SF": {
+    "player_id": "SF",
+    "first_name": "San Francisco",
+    "last_name": "49ers",
+    "position": "DEF",
+    "team": "SF",
+    "age": null
+  }
+}

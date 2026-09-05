@@ -1,0 +1,114 @@
+[
+  {
+    "pick_no": 1,
+    "round": 1,
+    "draft_slot": 1,
+    "roster_id": 6,
+    "player_id": "4984",
+    "picked_by": "974293494250389504",
+    "metadata": {
+      "first_name": "Josh",
+      "last_name": "Allen",
+      "position": "QB",
+      "team": "BUF"
+    }
+  },
+  {
+    "pick_no": 2,
+    "round": 1,
+    "draft_slot": 2,
+    "roster_id": 12,
+    "player_id": "9221",
+    "picked_by": "1393956568579461120",
+    "metadata": {
+      "first_name": "Jahmyr",
+      "last_name": "Gibbs",
+      "position": "RB",
+      "team": "DET"
+    }
+  },
+  {
+    "pick_no": 3,
+    "round": 1,
+    "draft_slot": 3,
+    "roster_id": 1,
+    "player_id": "9509",
+    "picked_by": "1389405856373669888",
+    "metadata": {
+      "first_name": "Bijan",
+      "last_name": "Robinson",
+      "position": "RB",
+      "team": "ATL"
+    }
+  },
+  {
+    "pick_no": 4,
+    "round": 1,
+    "draft_slot": 4,
+    "roster_id": 9,
+    "player_id": "7564",
+    "picked_by": "1391794707645857792",
+    "metadata": {
+      "first_name": "Ja'Marr",
+      "last_name": "Chase",
+      "position": "WR",
+      "team": "CIN"
+    }
+  },
+  {
+    "pick_no": 5,
+    "round": 1,
+    "draft_slot": 5,
+    "roster_id": 11,
+    "player_id": "9488",
+    "picked_by": "1393642672744316928",
+    "metadata": {
+      "first_name": "Jaxon",
+      "last_name": "Smith-Njigba",
+      "position": "WR",
+      "team": "SEA"
+    }
+  },
+  {
+    "pick_no": 6,
+    "round": 1,
+    "draft_slot": 6,
+    "roster_id": 5,
+    "player_id": "9493",
+    "picked_by": "340868149878530048",
+    "metadata": {
+      "first_name": "Puka",
+      "last_name": "Nacua",
+      "position": "WR",
+      "team": "LAR"
+    }
+  },
+  {
+    "pick_no": 7,
+    "round": 1,
+    "draft_slot": 7,
+    "roster_id": 8,
+    "player_id": "11564",
+    "picked_by": "1248807598099017728",
+    "metadata": {
+      "first_name": "Drake",
+      "last_name": "Maye",
+      "position": "QB",
+      "team": "NE"
+    }
+  },
+  {
+    "pick_no": 8,
+    "round": 1,
+    "draft_slot": 8,
+    "roster_id": 10,
+    "player_id": "11604",
+    "picked_by": "1391834851761459200",
+    "metadata": {
+      "first_name": "Brock",
+      "last_name": "Bowers",
+      "position": "TE",
+      "team": "LV"
+    }
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "roster_id": 1,
+    "owner_id": "1389405856373669888",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 1
+    }
+  },
+  {
+    "roster_id": 2,
+    "owner_id": "1389744881773051904",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 2
+    }
+  },
+  {
+    "roster_id": 3,
+    "owner_id": "1389808594802704384",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 1
+    }
+  },
+  {
+    "roster_id": 4,
+    "owner_id": "1260836544839692288",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 2
+    }
+  },
+  {
+    "roster_id": 5,
+    "owner_id": "340868149878530048",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 1
+    }
+  },
+  {
+    "roster_id": 6,
+    "owner_id": "974293494250389504",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 2
+    }
+  },
+  {
+    "roster_id": 7,
+    "owner_id": "1390499445388382208",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 1
+    }
+  },
+  {
+    "roster_id": 8,
+    "owner_id": "1248807598099017728",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 2
+    }
+  },
+  {
+    "roster_id": 9,
+    "owner_id": "1391794707645857792",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 1
+    }
+  },
+  {
+    "roster_id": 10,
+    "owner_id": "1391834851761459200",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 2
+    }
+  },
+  {
+    "roster_id": 11,
+    "owner_id": "1393642672744316928",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 1
+    }
+  },
+  {
+    "roster_id": 12,
+    "owner_id": "1393956568579461120",
+    "players": null,
+    "taxi": null,
+    "reserve": null,
+    "settings": {
+      "division": 2
+    }
+  }
+]

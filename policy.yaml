@@ -1,0 +1,31 @@
+name: balanced_dynasty
+league_type: dynasty
+superflex: true
+tep_bonus: 0.5
+
+position_multipliers:
+  QB: 1.18
+  WR: 1.06
+  TE: 1.08
+  RB: 0.98
+  IDP: 0.82
+  K: 0.35
+  DEF: 0.35
+
+roster_targets_by_round:
+  6:  {QB: 2, WR: 2, RB: 1, TE: 0}
+  12: {QB: 3, WR: 4, RB: 3, TE: 1}
+  20: {QB: 3, WR: 7, RB: 5, TE: 2, IDP: 1}
+
+hard_rules:
+  minimum_qbs_after_round_6: 2
+  maximum_qbs_before_round_10: 3
+  earliest_k_round: 25
+  earliest_def_round: 25
+  earliest_idp_round_without_uploaded_rankings: 20
+  avoid_same_nfl_team_skill_stack_over: 3
+
+tie_breakers:
+  - younger_player
+  - scarcer_position
+  - higher_market_value
